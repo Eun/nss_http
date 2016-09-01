@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crypt Example</title>
+    <script src="sha512.js"></script>
+    <script src="sha512crypt.js"></script>
+    <style type="text/css">
+        body
+        {
+            padding: 1rem;
+            margin: 0;
+        }
+        div>*
+        {
+            display: block;
+            margin: 0;
+            padding: 0;
+        }
+        div
+        {
+            padding: .5em 0;
+        }
+        div>:first-child
+        {
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+    <div><label for="password">Password*</label><input type="text" name="password" id="password" /></div>
+    <div><label for="salt">Salt</label><input type="text" name="salt" id="salt" /></div>
+    <pre id="enc_pw">&nbsp;</pre>
+    <button id="crypt">Crypt</button>
+    <script type="text/javascript">
+
+
+        document.getElementById('crypt').addEventListener('click', function() {
+            var pw = document.getElementById('password').value;
+            var salt = document.getElementById('salt').value;
+            if (salt.length == 0) {
+                var saltAlpha = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+                salt = "";
+                for(var i = 0; i < 16; ++i) {
+                    salt += saltAlpha.charAt(Math.floor(Math.random() * saltAlpha.length));
+                };
+                document.getElementById('salt').value = salt;
+            }
+
+            document.getElementById("enc_pw").innerHTML = sha512crypt(pw, salt);
+
+
+        });
+        
+    </script>
+
+</body>
+</html>
+
+
+
+
+
+

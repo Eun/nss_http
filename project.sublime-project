@@ -1,0 +1,46 @@
+{
+	"build_systems":
+	[
+		{
+			"name": "Make Install",
+			"cmd":
+			[
+				"ssh",
+				"-i",
+				"${project_path}/.vagrant/machines/default/virtualbox/private_key",
+				"-o",
+				"UserKnownHostsFile=/dev/null",
+				"-o",
+				"StrictHostKeyChecking=no",
+				"-p",
+				"2222",
+				"vagrant@127.0.0.1",
+				"cd /vagrant/ && make install"
+			],
+			"windows":
+			{
+				"cmd":
+				[
+					"plink",
+					"-i",
+					"${project_path}/.vagrant/machines/default/virtualbox/private_key.ppk",
+					"-batch",
+					"-P",
+					"2222",
+					"vagrant@127.0.0.1",
+					"cd /vagrant/ && make install"
+				]
+			}
+		},
+	],
+	"folders":
+	[
+		{
+			"path": ".",
+			"folder_exclude_patterns":
+			[
+				".vagrant",		
+			]
+		}
+	]
+}
