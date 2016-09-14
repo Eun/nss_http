@@ -67,4 +67,4 @@
 
 // Loglevel
 //   possible values: LOG_ERR, LOG_WARNING, LOG_NOTICE, LOG_INFO, LOG_DEBUG
-#define LOG_LEVEL LOG_DEBUG
+#define LOG_LEVEL LOG_WARNING

@@ -16,7 +16,7 @@ struct user_object
     int32_t Gid;
     int32_t AuthKeysSize;
     char **AuthKeys;
-    char *CustomData;
+    struct json_object* CustomData;
 };
 
 enum nss_status user_object_from_json(const char* json_buffer, struct user_object* user, char* buffer, size_t buflen);

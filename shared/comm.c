@@ -97,7 +97,6 @@ enum nss_status _comm_get(const char* name, const unsigned int uid, struct user_
 
     curl_slist_free_all(headers);
 
-    curl_easy_cleanup(curl);
     json_object_put(json);
 
     if (res != CURLE_OK) {
@@ -108,6 +107,7 @@ enum nss_status _comm_get(const char* name, const unsigned int uid, struct user_
             int httpCode;
             if (curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &httpCode) == CURLE_OK) {
                 if (httpCode == 404) { 
+                    curl_easy_cleanup(curl);
                     return NSS_STATUS_NOTFOUND;
                 }
                 else if (httpCode == 401) { 
@@ -118,8 +118,10 @@ enum nss_status _comm_get(const char* name, const unsigned int uid, struct user_
                 }
             }   
         }
+        curl_easy_cleanup(curl);
         return NSS_STATUS_UNAVAIL;
     } 
+    curl_easy_cleanup(curl);
     output->ptr[output->len] = 0;
     return NSS_STATUS_SUCCESS;
 }

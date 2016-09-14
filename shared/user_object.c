@@ -30,6 +30,7 @@ enum nss_status user_object_from_json(const char* json_buffer, struct user_objec
     // get the "required" fields first
     if (!json_object_object_get_ex(json, "Password", &jfield)) {
         loge("ERROR: JSON does not contain 'Password' field\n");
+        json_object_put(json);
         json_tokener_free(tok);
         return NSS_STATUS_NOTFOUND;
     }
@@ -37,6 +38,7 @@ enum nss_status user_object_from_json(const char* json_buffer, struct user_objec
         const char *field = json_object_get_string(jfield);
         int len = strlen(field);
         if (ptr - buffer + len + 1 > buflen) {
+            json_object_put(json);
             json_tokener_free(tok);
             return NSS_STATUS_TRYAGAIN;
         }
@@ -51,6 +53,7 @@ enum nss_status user_object_from_json(const char* json_buffer, struct user_objec
 
     if (!json_object_object_get_ex(json, "User", &jfield)) {
         loge("ERROR: JSON does not contain 'User' field\n");
+        json_object_put(json);
         json_tokener_free(tok);
         return NSS_STATUS_NOTFOUND;
     }
@@ -58,6 +61,7 @@ enum nss_status user_object_from_json(const char* json_buffer, struct user_objec
         const char *field = json_object_get_string(jfield);
         int len = strlen(field);
         if (ptr - buffer + len + 1 > buflen) {
+            json_object_put(json);
             json_tokener_free(tok);
             return NSS_STATUS_TRYAGAIN;
         }
@@ -77,6 +81,7 @@ enum nss_status user_object_from_json(const char* json_buffer, struct user_objec
         const char *field = json_object_get_string(jfield);
         int len = strlen(field);
         if (ptr - buffer + len + 1 > buflen) {
+            json_object_put(json);
             json_tokener_free(tok);
             return NSS_STATUS_TRYAGAIN;
         }
@@ -92,6 +97,7 @@ enum nss_status user_object_from_json(const char* json_buffer, struct user_objec
         // if we have no "Shell" field use the DEFAULT_SHELL
         int len = strlen(DEFAULT_SHELL);
         if (ptr - buffer + len + 1 > buflen) {
+            json_object_put(json);
             json_tokener_free(tok);
             return NSS_STATUS_TRYAGAIN;
         }
@@ -104,6 +110,7 @@ enum nss_status user_object_from_json(const char* json_buffer, struct user_objec
         const char *field = json_object_get_string(jfield);
         int len = strlen(field);
         if (ptr - buffer + len + 1 > buflen) {
+            json_object_put(json);
             json_tokener_free(tok);
             return NSS_STATUS_TRYAGAIN;
         }
@@ -119,6 +126,7 @@ enum nss_status user_object_from_json(const char* json_buffer, struct user_objec
         // if we have no "Dir" field use the DEFAULT_DIR
         int len = strlen(DEFAULT_DIR);
         if (ptr - buffer + len + 1 > buflen) {
+            json_object_put(json);
             json_tokener_free(tok);
             return NSS_STATUS_TRYAGAIN;
         }
@@ -131,6 +139,7 @@ enum nss_status user_object_from_json(const char* json_buffer, struct user_objec
         const char *field = json_object_get_string(jfield);
         int len = strlen(field);
         if (ptr - buffer + len + 1 > buflen) {
+            json_object_put(json);
             json_tokener_free(tok);
             return NSS_STATUS_TRYAGAIN;
         }
@@ -170,33 +179,39 @@ enum nss_status user_object_from_json(const char* json_buffer, struct user_objec
         void *array = json_object_get_array(jfield);
         user->AuthKeysSize = array_list_length(array);
         // Allocate AuthKeys, because it wont fit in the buffer and we only need it in our ssh-key-helper
-        user->AuthKeys = (char**)malloc(sizeof(char*)*user->AuthKeysSize);
-        for (int i = 0; i < user->AuthKeysSize; i++) {
-            jfield = array_list_get_idx(array, i);
-            const char* key = json_object_get_string(jfield);
-            int len = strlen(key);
-            user->AuthKeys[i] = (char*)malloc(sizeof(char*)*(len+1));
-            memcpy(user->AuthKeys[i], key, len);
-            user->AuthKeys[i][len] = 0;
+        if (user->AuthKeysSize > 0) {
+            user->AuthKeys = (char**)malloc(sizeof(char*)*user->AuthKeysSize);
+            for (int i = 0; i < user->AuthKeysSize; i++) {
+                jfield = array_list_get_idx(array, i);
+                const char* key = json_object_get_string(jfield);
+                int len = strlen(key);
+                user->AuthKeys[i] = (char*)malloc(sizeof(char*)*(len+1));
+                memcpy(user->AuthKeys[i], key, len);
+                user->AuthKeys[i][len] = 0;
+            }
         }
     }
     logi("INFO: Parsed AuthKeysSize = %d\n", user->AuthKeysSize);
 
 
-    if (!json_object_object_get_ex(json, "CustomData", &jfield)) {
+    if (!json_object_object_get_ex(json, "CustomData", &(user->CustomData))) {
         logi("INFO: JSON does not contain 'CustomData' field\n");
         // if we have no "Gid" field use the DEFAULT_GID
         user->CustomData = NULL;
     }
-    else {
-        const char* data = json_object_to_json_string(jfield);
-        int len = strlen(data);
-        user->CustomData = (char*)malloc(sizeof(char*)*(len+1));
-        memcpy(user->CustomData, data, len);
-        user->CustomData[len] = 0;
+    else
+    {
+        // clone the object
+        struct json_tokener* data_tok = json_tokener_new();
+        const char* data = json_object_to_json_string(user->CustomData);
+        user->CustomData = json_tokener_parse_ex(data_tok, data, strlen(data));
+        logd("DEBUG: CUSTOMDATA: %s\n", data);
+        json_tokener_free(data_tok);
     }
     
+    
 
+    json_object_put(json);
     json_tokener_free(tok);
 
     return NSS_STATUS_SUCCESS;
@@ -222,7 +237,12 @@ struct json_object* user_object_to_json(struct user_object* user)
     }
 
     if (user->CustomData != NULL) {
-        json_object_object_add(json, "CustomData", json_object_new_string(user->CustomData));
+        struct json_tokener* data_tok = json_tokener_new();
+        const char* data = json_object_to_json_string(user->CustomData);
+        struct json_object* customData = json_tokener_parse_ex(data_tok, data, strlen(data));
+        json_tokener_free(data_tok);
+
+        json_object_object_add(json, "CustomData", customData);
     }
 
     return json;
@@ -242,7 +262,7 @@ void clear_user(struct user_object* user)
 
     // clear custom data if it was used
     if (user->CustomData != NULL) {
-        free(user->CustomData);
+        json_object_put(user->CustomData);
         user->CustomData = NULL;
     }
 }
