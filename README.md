@@ -28,7 +28,7 @@ Example app for your uses
     * libhiredis-dev
     * libjson-c-dev
     * libcurl4-openssl-dev
-
+    (You can run `make prepare` to install all needed packages)
 2. Adjust `shared/global.h` to your needs.
 3. run `make install` to compile and install `nss_http` and the `nss-http-key-helper`  
     If you only want nss_http `cd nss_http` and run `make install` there

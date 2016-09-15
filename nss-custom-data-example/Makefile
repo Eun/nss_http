@@ -1,5 +1,5 @@
 LIBS = -lcrypt -lhiredis -ljson-c -lcurl
-CFLAGS = -std=c99
+CFLAGS = -std=gnu99
 
 OBJ = $(patsubst %.c,%.o,$(wildcard *.c))
 OBJSHARED = $(patsubst %.c,%.o,$(wildcard ../shared/*.c))
@@ -7,10 +7,10 @@ all: nss-custom-data-example
 
 
 %.o: %.c
-	gcc -o $@ -fPIC -shared -c $(CFLAGS) -Wall -DAPP_NAME='"nss-custom-data-example"' $<
+	gcc -o $@ -fPIC -shared -c $(CFLAGS) -Wall $(AFLAGS) -DAPP_NAME='"nss-custom-data-example"' $<
 
 ../shared/%.o: ../shared/%.c
-	gcc -o $@ -fPIC -shared -c $(CFLAGS) -Wall -DAPP_NAME='"nss-custom-data-example"' $<
+	gcc -o $@ -fPIC -shared -c $(CFLAGS) -Wall $(AFLAGS) -DAPP_NAME='"nss-custom-data-example"' $<
 
 nss-custom-data-example: $(OBJ) $(OBJSHARED)
 	gcc $(LIBS) -o $@ $(OBJ) $(OBJSHARED)

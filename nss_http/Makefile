@@ -1,5 +1,5 @@
 LIBS = -lcrypt -lhiredis -ljson-c -lcurl
-CFLAGS = -std=c99
+CFLAGS = -std=gnu99
 
 OBJ = $(patsubst %.c,%.o,$(wildcard *.c))
 OBJSHARED = $(patsubst %.c,%.o,$(wildcard ../shared/*.c))
@@ -7,10 +7,10 @@ all: libnss_http.so.2
 
 
 %.o: %.c
-	gcc -o $@ -fPIC -shared -c $(CFLAGS) -Wall -DAPP_NAME='"nss_http"' $<
+	gcc -o $@ -fPIC -shared -c $(CFLAGS) -Wall $(AFLAGS) -DAPP_NAME='"nss_http"' $<
 
 ../shared/%.o: ../shared/%.c
-	gcc -o $@ -fPIC -shared -c $(CFLAGS) -Wall -DAPP_NAME='"nss_http"' $<
+	gcc -o $@ -fPIC -shared -c $(CFLAGS) -Wall $(AFLAGS) -DAPP_NAME='"nss_http"' $<
 
 libnss_http.so.2: $(OBJ) $(OBJSHARED)
 	gcc -fPIC -shared -Wl,-soname,libnss_http.so.2 $(LIBS) -o $@ $(OBJ) $(OBJSHARED)

@@ -7,7 +7,7 @@ SRCSHARED = $(wildcard ../../shared/*.c)
 all: $(patsubst %.c,%.out,$(wildcard *.c))
 
 %.out: %.c
-	gcc -g -o $@ -Wall $(CFLAGS) $(LIBS) $< $(SRC) $(SRCSHARED) -DAPP_NAME='"nss-http-$@"'
+	gcc -g -o $@ -Wall $(CFLAGS) $(AFLAGS) $(LIBS) $< $(SRC) $(SRCSHARED) -DAPP_NAME='"nss-http-$@"'
 	./$@
 
 clean:

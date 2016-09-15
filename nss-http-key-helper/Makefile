@@ -1,5 +1,5 @@
 LIBS = -lcrypt -lhiredis -ljson-c -lcurl
-CFLAGS = -std=c99
+CFLAGS = -std=gnu99
 
 OBJ = $(patsubst %.c,%.o,$(wildcard *.c))
 OBJSHARED = $(patsubst %.c,%.o,$(wildcard ../shared/*.c))
@@ -7,10 +7,10 @@ all: nss-http-key-helper
 
 
 %.o: %.c
-	gcc -o $@ -fPIC -shared -c $(CFLAGS) -Wall -DAPP_NAME='"nss-http-key-helper"' $<
+	gcc -o $@ -fPIC -shared -c $(CFLAGS) -Wall $(AFLAGS) -DAPP_NAME='"nss-http-key-helper"' $<
 
 ../shared/%.o: ../shared/%.c
-	gcc -o $@ -fPIC -shared -c $(CFLAGS) -Wall -DAPP_NAME='"nss-http-key-helper"' $<
+	gcc -o $@ -fPIC -shared -c $(CFLAGS) -Wall $(AFLAGS) -DAPP_NAME='"nss-http-key-helper"' $<
 
 nss-http-key-helper: $(OBJ) $(OBJSHARED)
 	gcc $(LIBS) -o $@ $(OBJ) $(OBJSHARED)

@@ -15,3 +15,7 @@ remove: uninstall
 uninstall:
 	cd nss_http && $(MAKE) uninstall
 	cd nss-http-key-helper && $(MAKE) uninstall
+
+prepare:
+	cd nss_http && $(MAKE) prepare
+	cd nss-http-key-helper && $(MAKE) prepare

@@ -11,7 +11,7 @@
 static size_t comm_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
     size_t realsize = size * nmemb;
-    log(LOG_DEBUG , "Writing chunk: %s (%ld)\n", ptr, realsize);
+    logd("Writing chunk: %s (%ld)\n", ptr, realsize);
     struct chunked_output* output = ((struct chunked_output*)userdata);
     while (output->size < output->len + realsize) {
         output->size = output->size + OutputChunkSize;
